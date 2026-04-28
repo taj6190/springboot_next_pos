@@ -1,0 +1,96 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: pos-system
+
+  # MySQL Configuration
+  datasource:
+    url: jdbc:mysql://localhost:3306/pos_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: Yousuf007
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
+
+  # Redis Configuration
+  data:
+    redis:
+      host: current-rabbit-79648.upstash.io
+      port: 6379
+      password: gQAAAAAAATcgAAIncDJhYTVlZWY4MjVjNjA0MjI3YjFhNTExNGM1M2YzNmI1MHAyNzk2NDg
+      ssl:
+        enabled: true
+      timeout: 60000
+
+  # Jackson Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: UTC
+
+  # File Upload
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# JWT Configuration
+jwt:
+  secret: YourSuperSecretKeyForJWTTokenGenerationMustBeAtLeast256BitsLongForHS256Algorithm2024POS
+  access-token-expiration: 900000       # 15 minutes
+  refresh-token-expiration: 604800000   # 7 days
+
+# Cloudinary Configuration
+cloudinary:
+  cloud-name: dvjyqpdhx
+  api-key: 294864392698624
+  api-secret: tb4O8ZyJtPAmvhepmZVHxyj7Snc
+  folder: pos-system
+
+# Application Custom Config
+app:
+  cors:
+    allowed-origins: http://localhost:3000,http://localhost:5173
+  default-page-size: 20
+  max-page-size: 100
+  tax-rate: 0.0   # 0% default tax rate, configurable
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+
+logging:
+  level:
+    com.pos.backend: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
