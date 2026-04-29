@@ -66,6 +66,22 @@ public class SecurityConfig {
                         .requestMatchers("/reports/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/dashboard/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/inventory/**").hasAnyRole("ADMIN", "MANAGER")
+
+                        // Stores — Admin & Manager
+                        .requestMatchers("/stores/**").hasAnyRole("ADMIN", "MANAGER")
+
+                        // Tax Groups — Admin & Manager
+                        .requestMatchers("/tax-groups/**").hasAnyRole("ADMIN", "MANAGER")
+
+                        // Product sub-resources — read is authenticated, write is Admin/Manager
+                        .requestMatchers(HttpMethod.GET, "/product-variants/**").authenticated()
+                        .requestMatchers("/product-variants/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/product-batches/**").authenticated()
+                        .requestMatchers("/product-batches/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/product-images/**").authenticated()
+                        .requestMatchers("/product-images/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/product-suppliers/**").authenticated()
+                        .requestMatchers("/product-suppliers/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.GET, "/coupons/validate").authenticated()
                         .requestMatchers(HttpMethod.POST, "/coupons/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/coupons/**").hasAnyRole("ADMIN", "MANAGER")

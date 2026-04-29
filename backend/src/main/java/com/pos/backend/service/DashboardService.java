@@ -1,16 +1,21 @@
 package com.pos.backend.service;
 
-import com.pos.backend.dto.response.DashboardResponse;
-import com.pos.backend.repository.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.pos.backend.dto.response.DashboardResponse;
+import com.pos.backend.repository.CustomerRepository;
+import com.pos.backend.repository.ExpenseRepository;
+import com.pos.backend.repository.OrderItemRepository;
+import com.pos.backend.repository.OrderRepository;
+import com.pos.backend.repository.ProductRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +55,7 @@ public class DashboardService {
 
     public List<DashboardResponse.TopProductResponse> getTopProducts(int limit) {
         LocalDateTime monthStart = LocalDate.now().withDayOfMonth(1).atStartOfDay();
-        List<Object[]> results = orderItemRepository.findTopSellingProducts(monthStart, LocalDateTime.now(), limit);
+        List<Object[]> results = orderItemRepository.findTopSellingProducts(monthStart, LocalDateTime.now(), org.springframework.data.domain.PageRequest.of(0, limit));
         return results.stream().map(r -> DashboardResponse.TopProductResponse.builder()
                 .productId(((Number) r[0]).longValue())
                 .productName((String) r[1])

@@ -91,7 +91,7 @@ public class OrderService {
             subtotal = subtotal.add(totalPrice);
 
             if (product.getTaxRate() != null && product.getTaxRate().compareTo(BigDecimal.ZERO) > 0) {
-                BigDecimal itemTax = totalPrice.multiply(product.getTaxRate()).divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP);
+                BigDecimal itemTax = totalPrice.multiply(product.getTaxRate()).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
                 taxTotal = taxTotal.add(itemTax);
             }
         }

@@ -64,7 +64,7 @@ public class Coupon extends BaseEntity {
         if (minPurchase != null && subtotal.compareTo(minPurchase) < 0) return BigDecimal.ZERO;
         BigDecimal discount;
         if (discountType == DiscountType.PERCENTAGE) {
-            discount = subtotal.multiply(discountValue).divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP);
+            discount = subtotal.multiply(discountValue).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
             if (maxDiscount != null && discount.compareTo(maxDiscount) > 0) {
                 discount = maxDiscount;
             }

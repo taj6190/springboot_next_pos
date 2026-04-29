@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import useAuthStore from "@/store/authStore";
-import { HiOutlineHome, HiOutlineShoppingCart, HiOutlineCube, HiOutlineTag, HiOutlineClipboardList, HiOutlineUsers, HiOutlineTruck, HiOutlineDocumentText, HiOutlineChartBar, HiOutlineCog, HiOutlineLogout, HiOutlineUserGroup, HiOutlineTicket, HiOutlineCash, HiOutlineDocumentReport, HiOutlineRefresh, HiOutlineColorSwatch } from "react-icons/hi";
+import { HiOutlineHome, HiOutlineShoppingCart, HiOutlineCube, HiOutlineTag, HiOutlineClipboardList, HiOutlineUsers, HiOutlineTruck, HiOutlineDocumentText, HiOutlineChartBar, HiOutlineCog, HiOutlineLogout, HiOutlineUserGroup, HiOutlineTicket, HiOutlineCash, HiOutlineDocumentReport, HiOutlineRefresh, HiOutlineColorSwatch, HiOutlineOfficeBuilding, HiOutlineCalculator } from "react-icons/hi";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: HiOutlineHome, roles: ["ADMIN", "MANAGER"] },
@@ -14,6 +14,8 @@ const navItems = [
   { href: "/customers", label: "Customers", icon: HiOutlineUserGroup, roles: ["ADMIN", "MANAGER", "CASHIER"] },
   { href: "/coupons", label: "Coupons", icon: HiOutlineTicket, roles: ["ADMIN", "MANAGER"] },
   { href: "/inventory", label: "Inventory", icon: HiOutlineChartBar, roles: ["ADMIN", "MANAGER"] },
+  { href: "/stores", label: "Stores", icon: HiOutlineOfficeBuilding, roles: ["ADMIN", "MANAGER"] },
+  { href: "/tax-groups", label: "Tax Groups", icon: HiOutlineCalculator, roles: ["ADMIN", "MANAGER"] },
   { href: "/expenses", label: "Expenses", icon: HiOutlineCash, roles: ["ADMIN", "MANAGER"] },
   { href: "/suppliers", label: "Suppliers", icon: HiOutlineTruck, roles: ["ADMIN", "MANAGER"] },
   { href: "/purchase-orders", label: "Purchase Orders", icon: HiOutlineDocumentText, roles: ["ADMIN", "MANAGER"] },

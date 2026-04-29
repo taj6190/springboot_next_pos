@@ -29,6 +29,10 @@ public class ProductRequest {
     @DecimalMin(value = "0.01", message = "Selling price must be greater than 0")
     private BigDecimal sellingPrice;
 
+    /** Maximum Retail Price — widely used in Bangladesh. */
+    @DecimalMin(value = "0.0", message = "MRP must be non-negative")
+    private BigDecimal mrp;
+
     @Min(value = 0, message = "Stock must be non-negative")
     private Integer stock = 0;
 
@@ -44,4 +48,23 @@ public class ProductRequest {
     @DecimalMin(value = "0.0", message = "Tax rate must be non-negative")
     @DecimalMax(value = "100.0", message = "Tax rate must not exceed 100%")
     private BigDecimal taxRate;
+
+    /** Link to a TaxGroup for compliant multi-tax calculations. */
+    private Long taxGroupId;
+
+    /**
+     * Harmonised System Code — required for customs valuation,
+     * export/import documentation, and regulatory reporting in Bangladesh.
+     */
+    @Size(max = 20, message = "HS Code must not exceed 20 characters")
+    private String hsCode;
+
+    private BigDecimal weight;
+
+    @Size(max = 20)
+    private String weightUnit;
+
+    private Boolean soldByWeight;
+
+    private Boolean expiryTracking;
 }

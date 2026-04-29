@@ -30,11 +30,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.active = true AND " +
             "(LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
             "LOWER(p.sku) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-            "p.barcode LIKE CONCAT('%', :query, '%'))")
+            "p.barcode LIKE CONCAT('%', :query, '%') OR " +
+            "p.hsCode LIKE CONCAT('%', :query, '%'))")
     Page<Product> searchProducts(@Param("query") String query, Pageable pageable);
 
     @Query("SELECT p FROM Product p WHERE p.active = true")
     Page<Product> findAllActive(Pageable pageable);
+
+    List<Product> findByHsCode(String hsCode);
 
     @Query("SELECT COUNT(p) FROM Product p WHERE p.active = true")
     long countActive();

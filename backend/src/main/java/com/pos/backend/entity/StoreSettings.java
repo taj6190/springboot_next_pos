@@ -4,11 +4,16 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * Store settings - single row config table.
+ * Store settings — single-row configuration table.
+ * Defaults are set for Bangladesh (BDT currency, 15% VAT).
  */
 @Entity
 @Table(name = "store_settings")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class StoreSettings {
 
     @Id
@@ -21,7 +26,7 @@ public class StoreSettings {
 
     @Column(length = 200)
     @Builder.Default
-    private String tagline = "Your Trusted Supershop";
+    private String tagline = "Your Trusted Retail Partner";
 
     @Column(length = 300)
     @Builder.Default
@@ -37,21 +42,22 @@ public class StoreSettings {
     @Column(length = 500)
     private String website;
 
-    @Column(name = "tax_rate", columnDefinition = "DECIMAL(5,2) DEFAULT 0")
+    /** Default VAT rate — 15% standard in Bangladesh. */
+    @Column(name = "tax_rate", columnDefinition = "DECIMAL(5,2) DEFAULT 15.00")
     @Builder.Default
-    private Double defaultTaxRate = 0.0;
+    private Double defaultTaxRate = 15.0;
 
     @Column(length = 10)
     @Builder.Default
-    private String currency = "USD";
+    private String currency = "BDT";
 
     @Column(name = "currency_symbol", length = 5)
     @Builder.Default
-    private String currencySymbol = "$";
+    private String currencySymbol = "৳";
 
     @Column(name = "receipt_footer", length = 500)
     @Builder.Default
-    private String receiptFooter = "Thank you for shopping!";
+    private String receiptFooter = "Thank you for shopping with us!";
 
     @Column(name = "return_policy", length = 500)
     @Builder.Default
@@ -60,4 +66,12 @@ public class StoreSettings {
     @Column(name = "low_stock_threshold")
     @Builder.Default
     private Integer lowStockThreshold = 10;
+
+    /** BIN (Business Identification Number) for Bangladesh VAT registration. */
+    @Column(length = 30)
+    private String bin;
+
+    /** TIN (Tax Identification Number). */
+    @Column(length = 30)
+    private String tin;
 }

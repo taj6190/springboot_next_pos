@@ -59,6 +59,7 @@ public class ReturnService {
                 .build();
 
         BigDecimal totalRefund = BigDecimal.ZERO;
+        @SuppressWarnings("unchecked")
         List<Map<String,Object>> items = (List<Map<String,Object>>) req.get("items");
         for (Map<String,Object> item : items) {
             Long productId = Long.valueOf(item.get("productId").toString());

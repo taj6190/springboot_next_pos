@@ -62,6 +62,15 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* Tax Registration — Bangladesh */}
+      <div className="card" style={{ marginBottom: "1rem", padding: "1.25rem" }}>
+        <h3 style={{ fontSize: "0.95rem", fontWeight: 700, marginBottom: "1rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem" }}>🏛️ Tax Registration</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.875rem" }}>
+          <Field label="BIN (Business Identification Number)" field="bin" hint="Bangladesh VAT registration number" />
+          <Field label="TIN (Tax Identification Number)" field="tin" hint="Income tax identification number" />
+        </div>
+      </div>
+
       {/* Receipt & Inventory */}
       <div className="card" style={{ marginBottom: "1rem", padding: "1.25rem" }}>
         <h3 style={{ fontSize: "0.95rem", fontWeight: 700, marginBottom: "1rem", borderBottom: "1px solid var(--border)", paddingBottom: "0.5rem" }}>🧾 Receipt & Inventory</h3>

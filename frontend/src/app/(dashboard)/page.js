@@ -72,7 +72,7 @@ export default function DashboardPage() {
           <h3 style={{ fontSize: "0.95rem", fontWeight: 700, marginBottom: "0.75rem" }}>Sales (Last 14 Days)</h3>
           <div style={{ height: 250 }}>
             {salesChart.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={salesChart}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                   <XAxis dataKey="date" tick={{ fill: "var(--text-secondary)", fontSize: 10 }} tickFormatter={(v) => v?.slice(5)} />

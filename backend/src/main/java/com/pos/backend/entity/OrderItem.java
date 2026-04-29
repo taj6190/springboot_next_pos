@@ -7,7 +7,8 @@ import java.math.BigDecimal;
 
 /**
  * OrderItem entity representing a single line item in an order.
- * Stores a snapshot of product details at the time of sale.
+ * Stores a snapshot of product details at the time of sale,
+ * with optional variant and batch references for traceability.
  */
 @Entity
 @Table(name = "order_items")
@@ -26,11 +27,24 @@ public class OrderItem extends BaseEntity {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    /** Nullable — set when the sold item is a specific variant. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "variant_id")
+    private ProductVariant variant;
+
     @Column(name = "product_name", nullable = false, length = 200)
     private String productName;
 
     @Column(name = "product_sku", length = 50)
     private String productSku;
+
+    /** Variant label snapshot (e.g., "Ruby Red / 5ml") — null if no variant. */
+    @Column(name = "variant_name", length = 200)
+    private String variantName;
+
+    /** Batch/lot number snapshot for traceability on the invoice. */
+    @Column(name = "batch_number", length = 50)
+    private String batchNumber;
 
     @Column(nullable = false)
     private Integer quantity;

@@ -6,11 +6,13 @@ import lombok.*;
 
 /**
  * User entity representing system users (Admin, Manager, Cashier).
+ * Supports multi-store assignment via the optional store FK.
  */
 @Entity
 @Table(name = "users", indexes = {
         @Index(name = "idx_user_username", columnList = "username", unique = true),
-        @Index(name = "idx_user_email", columnList = "email", unique = true)
+        @Index(name = "idx_user_email", columnList = "email", unique = true),
+        @Index(name = "idx_user_store", columnList = "store_id")
 })
 @Getter
 @Setter
@@ -44,4 +46,9 @@ public class User extends BaseEntity {
 
     @Column(name = "profile_image_url")
     private String profileImageUrl;
+
+    /** The store this user is primarily assigned to (nullable for admins). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
+    private Store store;
 }
