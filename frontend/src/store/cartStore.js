@@ -8,22 +8,34 @@ const useCartStore = create((set, get) => ({
 
   addItem: (product) => {
     const items = get().items;
-    const existing = items.find((i) => i.productId === product.id);
+    const cartItemId = product.variantId ? `${product.id}-${product.variantId}` : `${product.id}`;
+    const existing = items.find((i) => i.cartItemId === cartItemId);
+    
     if (existing) {
       if (existing.quantity >= product.stock) return;
-      set({ items: items.map((i) => i.productId === product.id ? { ...i, quantity: i.quantity + 1 } : i) });
+      set({ items: items.map((i) => i.cartItemId === cartItemId ? { ...i, quantity: i.quantity + 1 } : i) });
     } else {
-      set({ items: [...items, { productId: product.id, name: product.name, sku: product.sku, price: product.sellingPrice, stock: product.stock, quantity: 1, taxRate: product.taxRate || 0 }] });
+      set({ items: [...items, { 
+        cartItemId, 
+        productId: product.id, 
+        variantId: product.variantId,
+        name: product.variantName ? `${product.name} (${product.variantName})` : product.name, 
+        sku: product.variantSku || product.sku, 
+        price: product.variantPrice != null ? product.variantPrice : product.sellingPrice, 
+        stock: product.stock, 
+        quantity: 1, 
+        taxRate: product.taxRate || 0 
+      }] });
     }
   },
 
-  removeItem: (productId) => {
-    set({ items: get().items.filter((i) => i.productId !== productId) });
+  removeItem: (cartItemId) => {
+    set({ items: get().items.filter((i) => i.cartItemId !== cartItemId) });
   },
 
-  updateQuantity: (productId, quantity) => {
+  updateQuantity: (cartItemId, quantity) => {
     if (quantity < 1) return;
-    set({ items: get().items.map((i) => i.productId === productId ? { ...i, quantity: Math.min(quantity, i.stock) } : i) });
+    set({ items: get().items.map((i) => i.cartItemId === cartItemId ? { ...i, quantity: Math.min(quantity, i.stock) } : i) });
   },
 
   setCustomerId: (id) => set({ customerId: id }),

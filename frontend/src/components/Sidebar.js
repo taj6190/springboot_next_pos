@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import useAuthStore from "@/store/authStore";
-import { HiOutlineHome, HiOutlineShoppingCart, HiOutlineCube, HiOutlineTag, HiOutlineClipboardList, HiOutlineUsers, HiOutlineTruck, HiOutlineDocumentText, HiOutlineChartBar, HiOutlineCog, HiOutlineLogout, HiOutlineUserGroup, HiOutlineTicket, HiOutlineCash, HiOutlineDocumentReport, HiOutlineRefresh, HiOutlineColorSwatch, HiOutlineOfficeBuilding, HiOutlineCalculator } from "react-icons/hi";
+import { HiOutlineHome, HiOutlineShoppingCart, HiOutlineCube, HiOutlineTag, HiOutlineClipboardList, HiOutlineUsers, HiOutlineTruck, HiOutlineDocumentText, HiOutlineChartBar, HiOutlineCog, HiOutlineLogout, HiOutlineUserGroup, HiOutlineTicket, HiOutlineCash, HiOutlineDocumentReport, HiOutlineRefresh, HiOutlineColorSwatch, HiOutlineOfficeBuilding, HiOutlineCalculator, HiMenuAlt3 } from "react-icons/hi";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: HiOutlineHome, roles: ["ADMIN", "MANAGER"] },
@@ -25,7 +25,7 @@ const navItems = [
   { href: "/settings", label: "Settings", icon: HiOutlineCog, roles: ["ADMIN"] },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isCollapsed, toggleCollapse }) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
 
@@ -33,61 +33,84 @@ export default function Sidebar() {
 
   return (
     <aside style={{
-      width: "260px", minHeight: "100vh", background: "var(--bg-secondary)",
+      width: isCollapsed ? "80px" : "260px",
+      height: "100vh", background: "var(--bg-secondary)",
       borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column",
-      position: "fixed", left: 0, top: 0, zIndex: 40
+      position: "fixed", left: 0, top: 0, zIndex: 40,
+      transition: "width 0.3s ease"
     }}>
       {/* Logo */}
-      <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--border)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-          <div style={{
-            width: 40, height: 40, background: "var(--accent)",
+      <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: isCollapsed ? "center" : "space-between", flexShrink: 0 }}>
+        {isCollapsed ? (
+          <div onClick={toggleCollapse} style={{
+            width: 40, height: 40, background: "var(--accent)", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.25rem", fontWeight: 800, color: "#fff"
           }}>P</div>
-          <div>
-            <h1 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-primary)" }}>POS System</h1>
-            <p style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>Point of Sale</p>
-          </div>
-        </div>
+        ) : (
+          <>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <div style={{
+                width: 40, height: 40, background: "var(--accent)",
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.25rem", fontWeight: 800, color: "#fff"
+              }}>P</div>
+              <div>
+                <h1 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-primary)", whiteSpace: "nowrap" }}>POS System</h1>
+                <p style={{ fontSize: "0.7rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>Point of Sale</p>
+              </div>
+            </div>
+            <button onClick={toggleCollapse} style={{ padding: "0.25rem", border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <HiMenuAlt3 size={24} color="var(--text-primary)" />
+            </button>
+          </>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav style={{ flex: 1, padding: "1rem 0.75rem", display: "flex", flexDirection: "column", gap: "0.25rem", overflowY: "auto" }}>
+      <nav style={{ flex: 1, minHeight: 0, padding: "1rem 0", display: "flex", flexDirection: "column", gap: "0.25rem", overflowY: "auto", overflowX: "hidden" }}>
         {filtered.map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
           return (
             <Link key={item.href} href={item.href} style={{
               display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.875rem", fontWeight: active ? 600 : 400, textDecoration: "none",
-              padding: "0.75rem 1rem",
+              padding: isCollapsed ? "0.75rem 0" : "0.75rem 1.5rem",
+              justifyContent: isCollapsed ? "center" : "flex-start",
               background: active ? "var(--accent)" : "transparent",
               color: active ? "#fff" : "var(--text-secondary)",
               transition: "all 0.2s ease",
             }}
+            title={item.label}
             onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = "var(--bg-hover)"; e.currentTarget.style.color = "var(--text-primary)"; }}}
             onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-secondary)"; }}}
             >
-              <Icon size={20} />
-              {item.label}
+              <Icon size={20} style={{ minWidth: 20 }} />
+              {!isCollapsed && <span style={{ whiteSpace: "nowrap" }}>{item.label}</span>}
             </Link>
           );
         })}
       </nav>
 
       {/* User section */}
-      <div style={{ padding: "1rem", borderTop: "1px solid var(--border)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
+      <div style={{ padding: "1rem", borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", alignItems: isCollapsed ? "center" : "stretch", flexShrink: 0 }}>
+        {isCollapsed ? (
           <div style={{
-            width: 36, height: 36, background: "var(--accent)",
+            width: 36, height: 36, background: "var(--accent)", marginBottom: "0.75rem",
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.8rem", fontWeight: 700, color: "#fff"
-          }}>{user?.fullName?.charAt(0) || "U"}</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.fullName}</p>
-            <p style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>{user?.role}</p>
+          }} title={user?.fullName}>{user?.fullName?.charAt(0) || "U"}</div>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
+            <div style={{
+              width: 36, height: 36, background: "var(--accent)",
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.8rem", fontWeight: 700, color: "#fff", minWidth: 36
+            }}>{user?.fullName?.charAt(0) || "U"}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.fullName}</p>
+              <p style={{ fontSize: "0.7rem", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{user?.role}</p>
+            </div>
           </div>
-        </div>
-        <button onClick={logout} className="btn btn-ghost" style={{ width: "100%", fontSize: "0.8rem" }}>
-          <HiOutlineLogout size={16} /> Logout
+        )}
+        <button onClick={logout} className="btn btn-ghost" style={{ width: "100%", fontSize: "0.8rem", padding: isCollapsed ? "0.5rem 0" : "0.5rem 1rem", justifyContent: "center" }} title="Logout">
+          <HiOutlineLogout size={isCollapsed ? 20 : 16} /> {!isCollapsed && <span style={{ whiteSpace: "nowrap" }}>Logout</span>}
         </button>
       </div>
     </aside>

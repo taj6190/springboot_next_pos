@@ -33,6 +33,7 @@ public class OrderService {
     private final CustomerService customerService;
     private final CouponService couponService;
     private final CouponRepository couponRepository;
+    private final ProductVariantRepository productVariantRepository;
 
     @Transactional
     public OrderResponse createOrder(OrderRequest request) {
@@ -74,16 +75,32 @@ public class OrderService {
                 throw new InsufficientStockException(product.getName(), itemReq.getQuantity(), product.getStock());
             }
 
+            ProductVariant variant = null;
             BigDecimal unitPrice = product.getSellingPrice();
+            BigDecimal costPrice = product.getCostPrice();
+            String sku = product.getSku();
+            String variantName = null;
+
+            if (itemReq.getVariantId() != null) {
+                variant = productVariantRepository.findById(itemReq.getVariantId())
+                        .orElseThrow(() -> new ResourceNotFoundException("ProductVariant", "id", itemReq.getVariantId()));
+                if (variant.getSellingPrice() != null) unitPrice = variant.getSellingPrice();
+                if (variant.getCostPrice() != null) costPrice = variant.getCostPrice();
+                sku = variant.getSku() != null ? variant.getSku() : sku;
+                variantName = variant.getVariantName();
+            }
+
             BigDecimal totalPrice = unitPrice.multiply(BigDecimal.valueOf(itemReq.getQuantity()));
 
             OrderItem orderItem = OrderItem.builder()
                     .product(product)
+                    .variant(variant)
                     .productName(product.getName())
-                    .productSku(product.getSku())
+                    .variantName(variantName)
+                    .productSku(sku)
                     .quantity(itemReq.getQuantity())
                     .unitPrice(unitPrice)
-                    .costPrice(product.getCostPrice())
+                    .costPrice(costPrice)
                     .totalPrice(totalPrice)
                     .build();
 

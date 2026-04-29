@@ -4,6 +4,7 @@ import api from "@/lib/api";
 import useCartStore from "@/store/cartStore";
 import toast from "react-hot-toast";
 import Receipt from "@/components/Receipt";
+import Modal from "@/components/Modal";
 import { HiOutlineSearch, HiOutlineTrash, HiOutlinePlus, HiOutlineMinus, HiOutlineShoppingCart, HiOutlineTicket, HiOutlinePause, HiOutlinePlay, HiOutlinePhotograph, HiOutlineClock, HiOutlineX } from "react-icons/hi";
 
 export default function POSPage() {
@@ -21,6 +22,11 @@ export default function POSPage() {
   const [receipt, setReceipt] = useState(null);
   const [categories, setCategories] = useState([]);
   const [selCat, setSelCat] = useState(null);
+
+  const [variantModalOpen, setVariantModalOpen] = useState(false);
+  const [selectedProductForVariants, setSelectedProductForVariants] = useState(null);
+  const [productVariants, setProductVariants] = useState([]);
+
   const cart = useCartStore();
   const searchRef = useRef(null);
   const barcodeBuffer = useRef("");
@@ -51,10 +57,33 @@ export default function POSPage() {
 
   const applyCoupon = async () => {
     if (!couponCode.trim()) return;
-    try { const res = await api.get(`/coupons/validate?code=${couponCode}&subtotal=${cart.getSubtotal()}`); const d = parseFloat(res.data.data.discountValue); setCouponDiscount(d); setCouponValid(true); toast.success(`Coupon applied! -৳{d.toFixed(2)}`); }
+    try { const res = await api.get(`/coupons/validate?code=${couponCode}&subtotal=${cart.getSubtotal()}`); const d = parseFloat(res.data.data.discountValue); setCouponDiscount(d); setCouponValid(true); toast.success(`Coupon applied! -৳${d.toFixed(2)}`); }
     catch (err) { setCouponDiscount(0); setCouponValid(false); toast.error(err.response?.data?.message || "Invalid coupon"); }
   };
   const removeCoupon = () => { setCouponCode(""); setCouponDiscount(0); setCouponValid(null); };
+
+  const openVariantSelector = async (product) => {
+    setSelectedProductForVariants(product);
+    try {
+      const res = await api.get(`/product-variants/product/${product.id}`);
+      setProductVariants(res.data.data.filter(v => v.active));
+      setVariantModalOpen(true);
+    } catch {
+      toast.error("Failed to load variants");
+    }
+  };
+
+  const selectVariant = (variant) => {
+    cart.addItem({
+      ...selectedProductForVariants,
+      variantId: variant.id,
+      variantName: variant.variantName,
+      variantSku: variant.sku,
+      variantPrice: variant.sellingPrice
+    });
+    toast.success(`${selectedProductForVariants.name} (${variant.variantName}) added`, { duration: 600, style: { fontSize: "0.8rem", borderRadius: 0 } });
+    setVariantModalOpen(false);
+  };
 
   const holdOrder = () => {
     if (cart.items.length === 0) return;
@@ -65,7 +94,7 @@ export default function POSPage() {
   };
   const resumeOrder = (idx) => {
     const held = heldOrders[idx]; cart.clearCart();
-    held.items.forEach(i => { for (let n = 0; n < i.quantity; n++) cart.addItem({ id: i.productId, name: i.name, sku: i.sku, sellingPrice: i.price, stock: i.stock, taxRate: i.taxRate }); });
+    held.items.forEach(i => { for (let n = 0; n < i.quantity; n++) cart.addItem({ id: i.productId, variantId: i.variantId, variantName: i.name.includes("(") ? i.name.split("(")[1].replace(")","").trim() : null, name: i.name.split(" (")[0], sku: i.sku, sellingPrice: i.price, variantPrice: i.price, stock: i.stock, taxRate: i.taxRate }); });
     if (held.customerId) cart.setCustomerId(held.customerId);
     setHeldOrders(prev => prev.filter((_, i) => i !== idx));
     setShowHeld(false);
@@ -77,9 +106,9 @@ export default function POSPage() {
     if (cart.items.length === 0) return toast.error("Cart is empty");
     setProcessing(true);
     try {
-      const body = { customerId: cart.customerId || null, items: cart.items.map(i => ({ productId: i.productId, quantity: i.quantity })), paymentMethod, discountAmount: cart.discountAmount || 0, amountReceived: amountReceived ? parseFloat(amountReceived) : null, notes: cart.notes || null, couponCode: couponValid ? couponCode : null };
+      const body = { customerId: cart.customerId || null, items: cart.items.map(i => ({ productId: i.productId, variantId: i.variantId || null, quantity: i.quantity })), paymentMethod, discountAmount: cart.discountAmount || 0, amountReceived: amountReceived ? parseFloat(amountReceived) : null, notes: cart.notes || null, couponCode: couponValid ? couponCode : null };
       const res = await api.post("/orders", body);
-      setReceipt(res.data.data); toast.success(`Order ৳{res.data.data.orderNumber} created!`);
+      setReceipt(res.data.data); toast.success(`Order #${res.data.data.orderNumber} created!`);
       cart.clearCart(); setAmountReceived(""); removeCoupon(); fetchProducts();
     } catch (err) { toast.error(err.response?.data?.message || "Checkout failed"); }
     finally { setProcessing(false); }
@@ -101,7 +130,7 @@ export default function POSPage() {
             <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", letterSpacing: "0.5px" }}>SELECT PRODUCTS TO BEGIN</p>
           </div>
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <button className={`pos-btn ৳{heldOrders.length > 0 ? "pos-btn-active" : "pos-btn-outline"}`} onClick={() => setShowHeld(true)} style={{ position: "relative" }}>
+            <button className={`pos-btn ${heldOrders.length > 0 ? "pos-btn-active" : "pos-btn-outline"}`} onClick={() => setShowHeld(true)} style={{ position: "relative" }}>
               <HiOutlineClock size={16} /> HELD ORDERS
               {heldOrders.length > 0 && (
                 <span className="badge-square">{heldOrders.length}</span>
@@ -120,15 +149,24 @@ export default function POSPage() {
             <input ref={searchRef} className="pos-input search-input" placeholder="Search product name or scan barcode..." value={search} onChange={e => setSearch(e.target.value)} autoFocus />
           </div>
           <div style={{ display: "flex", gap: "0.5rem", overflowX: "auto", paddingBottom: "0.25rem", flexShrink: 0 }} className="hide-scrollbar">
-            <button className={`pos-cat-btn ৳{!selCat ? "active" : ""}`} onClick={() => setSelCat(null)}>ALL PRODUCTS</button>
-            {categories.map(c => <button key={c.id} className={`pos-cat-btn ৳{selCat === c.id ? "active" : ""}`} onClick={() => setSelCat(c.id)}>{c.name.toUpperCase()}</button>)}
+            <button className={`pos-cat-btn ${!selCat ? "active" : ""}`} onClick={() => setSelCat(null)}>ALL PRODUCTS</button>
+            {categories.map(c => <button key={c.id} className={`pos-cat-btn ${selCat === c.id ? "active" : ""}`} onClick={() => setSelCat(c.id)}>{c.name.toUpperCase()}</button>)}
           </div>
         </div>
 
         {/* Product grid */}
         <div className="product-grid hide-scrollbar">
           {products.map(p => (
-            <div key={p.id} className={`pos-product-card ${p.stock <= 0 ? "out-of-stock" : ""}`} onClick={() => { if(p.stock > 0) { cart.addItem(p); toast.success(`${p.name} added`, { duration: 600, style: { fontSize: "0.8rem", borderRadius: 0 } }); } }}>
+            <div key={p.id} className={`pos-product-card ${p.stock <= 0 ? "out-of-stock" : ""}`} onClick={() => { 
+              if(p.stock > 0) { 
+                if (p.variantCount > 0) {
+                  openVariantSelector(p);
+                } else {
+                  cart.addItem(p); 
+                  toast.success(`${p.name} added`, { duration: 600, style: { fontSize: "0.8rem", borderRadius: 0 } }); 
+                }
+              } 
+            }}>
               <div className="product-img-wrapper">
                 {p.imageUrl ? <img src={p.imageUrl} alt={p.name} /> : <HiOutlinePhotograph size={32} color="var(--text-secondary)" style={{ opacity: 0.3 }} />}
                 {p.stock <= p.minStock && p.stock > 0 && <span className="stock-alert">LOW STOCK</span>}
@@ -168,16 +206,16 @@ export default function POSPage() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
               {cart.items.map(item => (
-                <div key={item.productId} className="cart-item">
+                <div key={item.cartItemId} className="cart-item">
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
                     <span className="cart-item-name">{item.name}</span>
-                    <button onClick={() => cart.removeItem(item.productId)} className="cart-item-delete"><HiOutlineTrash size={14} /></button>
+                    <button onClick={() => cart.removeItem(item.cartItemId)} className="cart-item-delete"><HiOutlineTrash size={14} /></button>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div className="qty-controls">
-                      <button onClick={() => cart.updateQuantity(item.productId, item.quantity - 1)}><HiOutlineMinus size={12} /></button>
+                      <button onClick={() => cart.updateQuantity(item.cartItemId, item.quantity - 1)}><HiOutlineMinus size={12} /></button>
                       <span>{item.quantity}</span>
-                      <button onClick={() => cart.updateQuantity(item.productId, item.quantity + 1)}><HiOutlinePlus size={12} /></button>
+                      <button onClick={() => cart.updateQuantity(item.cartItemId, item.quantity + 1)}><HiOutlinePlus size={12} /></button>
                     </div>
                     <span className="cart-item-price">৳{(item.price * item.quantity).toFixed(2)}</span>
                   </div>
@@ -216,11 +254,11 @@ export default function POSPage() {
             <div className="total-row"><span>TAX</span><span>৳{tax.toFixed(2)}</span></div>
             {couponDiscount > 0 && <div className="total-row success"><span>COUPON ({couponCode})</span><span>-${couponDiscount.toFixed(2)}</span></div>}
             <div className="total-row grand-total"><span>TOTAL DUE</span><span>৳{total.toFixed(2)}</span></div>
-            {paymentMethod === "CASH" && amountReceived && <div className={`total-row ৳{change >= 0 ? "success" : "danger"}`}><span>CHANGE</span><span>৳{change.toFixed(2)}</span></div>}
+            {paymentMethod === "CASH" && amountReceived && <div className={`total-row ${change >= 0 ? "success" : "danger"}`}><span>CHANGE</span><span>৳{change.toFixed(2)}</span></div>}
           </div>
 
           <button className="pos-checkout-btn" onClick={handleCheckout} disabled={processing || cart.items.length === 0}>
-            {processing ? "PROCESSING..." : `PAY ৳{total.toFixed(2)}`}
+            {processing ? "PROCESSING..." : `PAY ৳${total.toFixed(2)}`}
           </button>
         </div>
       </div>
@@ -280,6 +318,50 @@ export default function POSPage() {
           </div>
         </div>
       )}
+
+      {/* === VARIANT SELECTOR MODAL === */}
+      <Modal isOpen={variantModalOpen} onClose={() => setVariantModalOpen(false)} title={`Select Variant: ${selectedProductForVariants?.name}`} width="600px">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "0.75rem", padding: "0.5rem 0" }}>
+          {productVariants.length === 0 ? (
+            <div style={{ gridColumn: "1/-1", textAlign: "center", color: "var(--text-secondary)", padding: "2rem" }}>No active variants found.</div>
+          ) : (
+            productVariants.map(v => (
+              <button 
+                key={v.id}
+                onClick={() => selectVariant(v)}
+                style={{ 
+                  background: "var(--bg-secondary)", 
+                  border: "1px solid var(--border)", 
+                  padding: "1rem", 
+                  textAlign: "center", 
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  transition: "all 0.2s"
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                onMouseOut={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.transform = "none"; }}
+              >
+                {v.imageUrl ? (
+                   <img src={v.imageUrl} alt={v.variantName} style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 4 }} />
+                ) : (
+                   <div style={{ width: 40, height: 40, background: "var(--bg-hover)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 4 }}>
+                     <HiOutlinePhotograph size={20} color="var(--text-secondary)" />
+                   </div>
+                )}
+                <div>
+                  <div style={{ fontSize: "0.85rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.25rem" }}>{v.variantName}</div>
+                  <div style={{ fontSize: "0.85rem", fontWeight: 900, color: "var(--accent)" }}>
+                    ৳{v.sellingPrice != null ? v.sellingPrice.toFixed(2) : selectedProductForVariants?.sellingPrice?.toFixed(2)}
+                  </div>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      </Modal>
 
       {receipt && <Receipt order={receipt} onClose={() => setReceipt(null)} />}
 
