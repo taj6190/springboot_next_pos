@@ -7,6 +7,7 @@ const useCartStore = create((set, get) => ({
   notes: "",
 
   addItem: (product) => {
+    if (product.stock <= 0) return;
     const items = get().items;
     const cartItemId = product.variantId ? `${product.id}-${product.variantId}` : `${product.id}`;
     const existing = items.find((i) => i.cartItemId === cartItemId);

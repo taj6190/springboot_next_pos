@@ -31,6 +31,7 @@ public class ProductVariantResponse {
     private String weightUnit;
     private String imageUrl;
     private Boolean active;
+    private Integer stock;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

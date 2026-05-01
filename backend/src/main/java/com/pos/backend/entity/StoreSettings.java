@@ -43,7 +43,7 @@ public class StoreSettings {
     private String website;
 
     /** Default VAT rate — 15% standard in Bangladesh. */
-    @Column(name = "tax_rate", columnDefinition = "DECIMAL(5,2) DEFAULT 15.00")
+    @Column(name = "tax_rate")
     @Builder.Default
     private Double defaultTaxRate = 15.0;
 

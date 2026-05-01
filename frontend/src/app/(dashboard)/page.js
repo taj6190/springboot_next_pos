@@ -12,7 +12,9 @@ export default function DashboardPage() {
   const [lowStock, setLowStock] = useState([]);
   const { user } = useAuthStore();
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    if (user) fetchData();
+  }, [user]);
 
   const fetchData = async () => {
     try {
@@ -26,7 +28,11 @@ export default function DashboardPage() {
       setTopProducts(topRes.data.data || []);
       setSalesChart(chartRes.data.data || []);
       setLowStock(lowRes.data.data || []);
-    } catch (err) { console.error("Dashboard error:", err); }
+    } catch (err) {
+      if (err.response?.status !== 401) {
+        console.error("Dashboard error:", err);
+      }
+    }
   };
 
   const statCards = stats ? [

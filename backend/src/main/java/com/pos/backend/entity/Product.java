@@ -139,20 +139,24 @@ public class Product extends BaseEntity {
 
     /* ---------- Collections ---------- */
 
+    @org.hibernate.annotations.BatchSize(size = 20)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     @OrderBy("sortOrder ASC")
     private List<ProductImage> images = new ArrayList<>();
 
+    @org.hibernate.annotations.BatchSize(size = 20)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<ProductVariant> variants = new ArrayList<>();
 
+    @org.hibernate.annotations.BatchSize(size = 20)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     @OrderBy("expiryDate ASC")
     private List<ProductBatch> batches = new ArrayList<>();
 
+    @org.hibernate.annotations.BatchSize(size = 20)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<ProductSupplier> productSuppliers = new ArrayList<>();

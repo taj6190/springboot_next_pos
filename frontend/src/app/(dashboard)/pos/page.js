@@ -79,7 +79,8 @@ export default function POSPage() {
       variantId: variant.id,
       variantName: variant.variantName,
       variantSku: variant.sku,
-      variantPrice: variant.sellingPrice
+      variantPrice: variant.sellingPrice,
+      stock: variant.stock
     });
     toast.success(`${selectedProductForVariants.name} (${variant.variantName}) added`, { duration: 600, style: { fontSize: "0.8rem", borderRadius: 0 } });
     setVariantModalOpen(false);
@@ -158,14 +159,12 @@ export default function POSPage() {
         <div className="product-grid hide-scrollbar">
           {products.map(p => (
             <div key={p.id} className={`pos-product-card ${p.stock <= 0 ? "out-of-stock" : ""}`} onClick={() => { 
-              if(p.stock > 0) { 
-                if (p.variantCount > 0) {
-                  openVariantSelector(p);
-                } else {
-                  cart.addItem(p); 
-                  toast.success(`${p.name} added`, { duration: 600, style: { fontSize: "0.8rem", borderRadius: 0 } }); 
-                }
-              } 
+              if (p.variantCount > 0) {
+                openVariantSelector(p);
+              } else if (p.stock > 0) { 
+                cart.addItem(p); 
+                toast.success(`${p.name} added`, { duration: 600, style: { fontSize: "0.8rem", borderRadius: 0 } }); 
+              }
             }}>
               <div className="product-img-wrapper">
                 {p.imageUrl ? <img src={p.imageUrl} alt={p.name} /> : <HiOutlinePhotograph size={32} color="var(--text-secondary)" style={{ opacity: 0.3 }} />}
@@ -325,24 +324,32 @@ export default function POSPage() {
           {productVariants.length === 0 ? (
             <div style={{ gridColumn: "1/-1", textAlign: "center", color: "var(--text-secondary)", padding: "2rem" }}>No active variants found.</div>
           ) : (
-            productVariants.map(v => (
+            productVariants.map(v => {
+              const stock = v.stock ?? 0;
+              const isOut = stock <= 0;
+              return (
               <button 
                 key={v.id}
-                onClick={() => selectVariant(v)}
+                onClick={() => !isOut && selectVariant(v)}
+                disabled={isOut}
+                className={`variant-btn ${isOut ? "disabled" : ""}`}
                 style={{ 
-                  background: "var(--bg-secondary)", 
+                  background: isOut ? "var(--bg-hover)" : "var(--bg-secondary)", 
                   border: "1px solid var(--border)", 
                   padding: "1rem", 
                   textAlign: "center", 
-                  cursor: "pointer",
+                  cursor: isOut ? "not-allowed" : "pointer",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   gap: "0.5rem",
-                  transition: "all 0.2s"
+                  transition: "all 0.2s",
+                  opacity: isOut ? 0.4 : 1,
+                  pointerEvents: isOut ? "none" : "auto",
+                  filter: isOut ? "grayscale(1)" : "none"
                 }}
-                onMouseOver={(e) => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                onMouseOut={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.transform = "none"; }}
+                onMouseOver={(e) => { if(!isOut) { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.transform = "translateY(-2px)"; } }}
+                onMouseOut={(e) => { if(!isOut) { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.transform = "none"; } }}
               >
                 {v.imageUrl ? (
                    <img src={v.imageUrl} alt={v.variantName} style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 4 }} />
@@ -352,13 +359,18 @@ export default function POSPage() {
                    </div>
                 )}
                 <div>
-                  <div style={{ fontSize: "0.85rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.25rem" }}>{v.variantName}</div>
-                  <div style={{ fontSize: "0.85rem", fontWeight: 900, color: "var(--accent)" }}>
+                  <div style={{ fontSize: "0.85rem", fontWeight: 800, color: isOut ? "var(--text-secondary)" : "var(--text-primary)", marginBottom: "0.25rem" }}>{v.variantName}</div>
+                  <div style={{ fontSize: "0.85rem", fontWeight: 900, color: isOut ? "var(--text-secondary)" : "var(--accent)" }}>
                     ৳{v.sellingPrice != null ? v.sellingPrice.toFixed(2) : selectedProductForVariants?.sellingPrice?.toFixed(2)}
                   </div>
+                  {isOut ? (
+                    <div style={{ fontSize: "0.65rem", fontWeight: 900, color: "var(--danger)", marginTop: "0.4rem", background: "rgba(239, 68, 68, 0.1)", padding: "2px 6px", border: "1px solid var(--danger)" }}>OUT OF STOCK</div>
+                  ) : (
+                    <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-secondary)", marginTop: "0.25rem" }}>{stock} IN STOCK</div>
+                  )}
                 </div>
               </button>
-            ))
+            )})
           )}
         </div>
       </Modal>

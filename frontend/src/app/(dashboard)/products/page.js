@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
-import api from "@/lib/api";
 import Modal from "@/components/Modal";
+import api from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineSearch, HiOutlinePhotograph, HiOutlineUpload, HiOutlineColorSwatch } from "react-icons/hi";
+import { HiOutlineColorSwatch, HiOutlinePencil, HiOutlinePhotograph, HiOutlinePlus, HiOutlineSearch, HiOutlineTrash } from "react-icons/hi";
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -205,3 +205,4 @@ export default function ProductsPage() {
     </div>
   );
 }
+

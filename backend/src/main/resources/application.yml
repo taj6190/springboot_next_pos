@@ -7,12 +7,12 @@ spring:
   application:
     name: pos-system
 
-  # MySQL Configuration
+  # PostgreSQL Configuration (Supabase)
   datasource:
-    url: jdbc:mysql://localhost:3306/pos_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: root
-    password: Yousuf007
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:postgresql://aws-1-ap-south-1.pooler.supabase.com:6543/postgres?prepareThreshold=0
+    username: postgres.pdtqjjhcrdhymxvwpveq
+    password: Abbuammu6190
+    driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
@@ -26,19 +26,17 @@ spring:
       ddl-auto: update
     show-sql: false
     properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-        format_sql: true
-        jdbc:
-          batch_size: 25
-        order_inserts: true
-        order_updates: true
+      "[hibernate.dialect]": org.hibernate.dialect.PostgreSQLDialect
+      "[hibernate.format_sql]": true
+      "[hibernate.jdbc.batch_size]": 25
+      "[hibernate.order_inserts]": true
+      "[hibernate.order_updates]": true
 
-  # Redis Configuration
   data:
     redis:
       host: current-rabbit-79648.upstash.io
       port: 6379
+      username: default
       password: gQAAAAAAATcgAAIncDJhYTVlZWY4MjVjNjA0MjI3YjFhNTExNGM1M2YzNmI1MHAyNzk2NDg
       ssl:
         enabled: true

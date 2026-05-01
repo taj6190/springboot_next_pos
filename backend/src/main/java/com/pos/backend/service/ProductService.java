@@ -1,5 +1,19 @@
 package com.pos.backend.service;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.pos.backend.dto.request.ProductRequest;
 import com.pos.backend.dto.response.PagedResponse;
 import com.pos.backend.dto.response.ProductImageResponse;
@@ -10,21 +24,13 @@ import com.pos.backend.entity.Product;
 import com.pos.backend.entity.TaxGroup;
 import com.pos.backend.exception.DuplicateResourceException;
 import com.pos.backend.exception.ResourceNotFoundException;
-import com.pos.backend.repository.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+import com.pos.backend.repository.BrandRepository;
+import com.pos.backend.repository.CategoryRepository;
+import com.pos.backend.repository.ProductImageRepository;
+import com.pos.backend.repository.ProductRepository;
+import com.pos.backend.repository.TaxGroupRepository;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -191,9 +197,8 @@ public class ProductService {
     }
 
     public ProductResponse mapToResponse(Product product) {
-        // Fetch image gallery
-        List<ProductImageResponse> images = imageRepository
-                .findByProductIdOrderBySortOrderAsc(product.getId()).stream()
+        // Fetch image gallery from product entity (leveraging BatchSize)
+        List<ProductImageResponse> images = product.getImages().stream()
                 .map(img -> ProductImageResponse.builder()
                         .id(img.getId()).productId(product.getId())
                         .url(img.getUrl()).publicId(img.getPublicId())
@@ -201,12 +206,21 @@ public class ProductService {
                         .isPrimary(img.getIsPrimary()).build())
                 .toList();
 
+        int activeVariantCount = (int) product.getVariants().stream().filter(v -> v.getActive() != null && v.getActive()).count();
+        int displayStock = product.getStock();
+        if (activeVariantCount > 0) {
+            displayStock = product.getVariants().stream()
+                .filter(v -> v.getActive() != null && v.getActive())
+                .mapToInt(v -> v.getStock() != null ? v.getStock() : 0)
+                .sum();
+        }
+
         return ProductResponse.builder()
                 .id(product.getId()).name(product.getName()).sku(product.getSku())
                 .barcode(product.getBarcode()).description(product.getDescription())
                 .costPrice(product.getCostPrice()).sellingPrice(product.getSellingPrice())
                 .mrp(product.getMrp())
-                .stock(product.getStock()).minStock(product.getMinStock())
+                .stock(displayStock).minStock(product.getMinStock())
                 .imageUrl(product.getImageUrl())
                 .images(images)
                 .categoryId(product.getCategory() != null ? product.getCategory().getId() : null)
@@ -221,8 +235,8 @@ public class ProductService {
                 .taxGroupName(product.getTaxGroup() != null ? product.getTaxGroup().getName() : null)
                 .hsCode(product.getHsCode())
                 .active(product.getActive())
-                .lowStock(product.getStock() <= product.getMinStock())
-                .variantCount(product.getVariants() != null ? product.getVariants().size() : 0)
+                .lowStock(displayStock <= product.getMinStock())
+                .variantCount(activeVariantCount)
                 .batchCount(product.getBatches() != null ? product.getBatches().size() : 0)
                 .supplierCount(product.getProductSuppliers() != null ? product.getProductSuppliers().size() : 0)
                 .createdAt(product.getCreatedAt()).updatedAt(product.getUpdatedAt()).build();

@@ -82,6 +82,11 @@ public class ProductVariant extends BaseEntity {
     @Column(name = "image_public_id")
     private String imagePublicId;
 
+    /** Legacy single-store stock for this variant */
+    @Column(name = "stock")
+    @Builder.Default
+    private Integer stock = 0;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean active = true;

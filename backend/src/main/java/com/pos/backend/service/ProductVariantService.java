@@ -64,6 +64,7 @@ public class ProductVariantService {
                 .costPrice(request.getCostPrice() != null ? request.getCostPrice() : product.getCostPrice())
                 .sellingPrice(request.getSellingPrice() != null ? request.getSellingPrice() : product.getSellingPrice())
                 .mrp(request.getMrp())
+                .stock(request.getStock() != null ? request.getStock() : 0)
                 .weight(request.getWeight())
                 .weightUnit(request.getWeightUnit())
                 .build();
@@ -91,6 +92,7 @@ public class ProductVariantService {
         if (request.getCostPrice() != null) variant.setCostPrice(request.getCostPrice());
         if (request.getSellingPrice() != null) variant.setSellingPrice(request.getSellingPrice());
         variant.setMrp(request.getMrp());
+        if (request.getStock() != null) variant.setStock(request.getStock());
         variant.setWeight(request.getWeight());
         variant.setWeightUnit(request.getWeightUnit());
 
@@ -128,6 +130,7 @@ public class ProductVariantService {
                 .costPrice(v.getCostPrice())
                 .sellingPrice(v.getSellingPrice())
                 .mrp(v.getMrp())
+                .stock(v.getStock() != null ? v.getStock() : 0)
                 .weight(v.getWeight())
                 .weightUnit(v.getWeightUnit())
                 .imageUrl(v.getImageUrl())

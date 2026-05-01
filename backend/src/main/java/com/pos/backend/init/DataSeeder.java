@@ -32,6 +32,11 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        log.info("Checking database state for seeding...");
+        log.info("User count: {}", userRepository.count());
+        log.info("Store count: {}", storeRepository.count());
+        log.info("TaxGroup count: {}", taxGroupRepository.count());
+        
         seedAdminUser();
         seedDefaultStore();
         seedTaxGroups();

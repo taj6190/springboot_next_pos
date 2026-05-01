@@ -30,6 +30,7 @@ export default function ProductDetailPage() {
     costPrice: "",
     sellingPrice: "",
     mrp: "",
+    stock: "0",
     weight: "",
     weightUnit: "g",
   };
@@ -76,6 +77,7 @@ export default function ProductDetailPage() {
       costPrice: v.costPrice || "",
       sellingPrice: v.sellingPrice || "",
       mrp: v.mrp || "",
+      stock: v.stock || "0",
       weight: v.weight || "",
       weightUnit: v.weightUnit || "g",
     });
@@ -90,6 +92,7 @@ export default function ProductDetailPage() {
       costPrice: variantForm.costPrice ? parseFloat(variantForm.costPrice) : null,
       sellingPrice: variantForm.sellingPrice ? parseFloat(variantForm.sellingPrice) : null,
       mrp: variantForm.mrp ? parseFloat(variantForm.mrp) : null,
+      stock: variantForm.stock ? parseInt(variantForm.stock) : 0,
       weight: variantForm.weight ? parseFloat(variantForm.weight) : null,
     };
     try {
@@ -218,6 +221,7 @@ export default function ProductDetailPage() {
                   <th>SKU</th>
                   <th>Option 1</th>
                   <th>Option 2</th>
+                  <th>Stock</th>
                   <th>Cost</th>
                   <th>Price</th>
                   <th>MRP</th>
@@ -260,6 +264,7 @@ export default function ProductDetailPage() {
                         </div>
                       ) : "—"}
                     </td>
+                    <td><span className={`badge ${v.stock <= 5 ? "badge-danger" : "badge-success"}`}>{v.stock || 0}</span></td>
                     <td>{v.costPrice != null ? `৳${Number(v.costPrice).toFixed(2)}` : <span style={{ color: "var(--text-secondary)" }}>inherit</span>}</td>
                     <td style={{ fontWeight: 600 }}>{v.sellingPrice != null ? `৳${Number(v.sellingPrice).toFixed(2)}` : <span style={{ color: "var(--text-secondary)" }}>inherit</span>}</td>
                     <td>{v.mrp != null ? `৳${Number(v.mrp).toFixed(2)}` : "—"}</td>
@@ -320,8 +325,12 @@ export default function ProductDetailPage() {
             <input className="input" value={variantForm.barcode} onChange={(e) => setVariantForm({ ...variantForm, barcode: e.target.value })} placeholder="Unique barcode for this variant" />
           </div>
 
-          {/* Pricing */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
+          {/* Pricing & Stock */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.5rem" }}>
+            <div>
+              <label className="form-label" style={{ fontSize: "0.65rem" }}>Stock</label>
+              <input className="input" type="number" value={variantForm.stock} onChange={(e) => setVariantForm({ ...variantForm, stock: e.target.value })} placeholder="0" />
+            </div>
             <div>
               <label className="form-label" style={{ fontSize: "0.65rem" }}>Cost Price</label>
               <input className="input" type="number" step="0.01" value={variantForm.costPrice} onChange={(e) => setVariantForm({ ...variantForm, costPrice: e.target.value })} placeholder="Inherit" />
